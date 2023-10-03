@@ -1,9 +1,15 @@
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from "react-router-dom";
+
+
 //Actions de Redux
 import { crearNuevoProductoAction } from '../actions/productoActions'
+import { mostrarAlerta, ocultarAlertaAction } from '../actions/alertaActions'
 
 const NuevoProducto = () => {
+
+  let navigate = useNavigate();
 
   //state del componente
 
@@ -15,6 +21,10 @@ const NuevoProducto = () => {
 
   const dispatch = useDispatch()
 
+  //Acceder al state del store
+  const cargando = useSelector(state => state.productos.loading)
+  const error = useSelector(state => state.productos.error)
+  const alerta = useSelector(state => state.alerta.alerta)
 
   // Mandar llamar el action de productoAction
   const agregarProducto = producto => dispatch(crearNuevoProductoAction(producto))
@@ -26,14 +36,26 @@ const NuevoProducto = () => {
     e.preventDefault()
 
     // Validar formulario
-    if(nombre.trim() === '' || precio <= 0){
+    if (nombre.trim() === '' || precio <= 0) {
+      const alerta = {
+        msg: 'Ambos campos son obligatorios',
+        classes: 'alert alert-danger text-center text-uppercase p3'
+      }
+      dispatch(mostrarAlerta(alerta))
       return
     }
+
+    dispatch(ocultarAlertaAction())
 
     // Si no hay errores
 
     //Crear el nuevo producto
-    agregarProducto({nombre, precio})
+    agregarProducto({ 
+      nombre, 
+      precio,
+    })
+    // Redireccionar
+    navigate("/");
   }
 
   return (
@@ -43,6 +65,9 @@ const NuevoProducto = () => {
           <h2 className='text-center mb-4 font-weight-bold'>
             Agregar Nuevo Producto
           </h2>
+
+          {alerta ? <p className={alerta.classes}>{alerta.msg}</p> : null}
+
           <form
             onSubmit={submitNuevoProducto}
           >
@@ -75,6 +100,8 @@ const NuevoProducto = () => {
               Agregar
             </button>
           </form>
+          {cargando ? <p>Cargando</p> : null}
+          {error ? <p className='alert alert-danger p2 text-center mt-4'>Hubo un error</p> : null}
         </div>
       </div>
     </div>
